@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Words starting with 'N' and 'O' - Vocabulary Memory Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    #game-board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      max-width: 900px;
+      margin: 20px auto;
+    }
+
+    .card {
+      background-color: #4caf50;
+      color: white;
+      border-radius: 8px;
+      padding: 20px;
+      cursor: pointer;
+      height: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 16px;
+      transition: background-color 0.3s, transform 0.3s;
+      user-select: none;
+    }
+
+    .card.flipped {
+      background-color: #ffffff;
+      color: #333;
+      cursor: default;
+      transform: scale(1.05);
+    }
+
+    .card.matched {
+      background-color: #9ccc65;
+      color: #333;
+      cursor: default;
+    }
+
+    #status {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+
+    #next-round-btn {
+      display: none;
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #2196f3;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #next-round-btn:hover {
+      background-color: #1976d2;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🧠 Vocabulary Memory Game – Words Starting with 'N' and 'O'</h1>
+<p>Match each word to its definition!</p>
+
+<h2 id="round-title">Round 1</h2>
+<div id="game-board"></div>
+<div id="status">Matches: 0 / 9</div>
+<button id="next-round-btn">Next Round</button>
+
+<script>
+  const allRounds = [
+    // Round 1 - N Words
+    [
+      { word: "Negate", def: "To make something have no effect or to say it’s not true" },
+      { word: "Network", def: "A group of connected people or things" },
+      { word: "Neutral", def: "Not choosing a side; not taking part; not noticeable" },
+      { word: "Nevertheless", def: "Still; in spite of that" },
+      { word: "Nonetheless", def: "Despite what has been said; however." },
+      { word: "Norm", def: "A usual or accepted way of doing something." },
+      { word: "Notion", def: "An idea or belief" },
+      { word: "Notwithstanding", def: "In spite of; despite." },
+      { word: "Nuclear", def: "Related to the energy from the center of atoms." }
+    ],
+
+    // Round 2 - O Words
+    [
+      { word: "Objective", def: "A goal or purpose" },
+      { word: "Obtain", def: "To get something" },
+      { word: "Obvious", def: "Very clear or easy to understand or see" },
+      { word: "Occupy", def: "To take up space, time, or live in a place" },
+      { word: "Occur", def: "To happen" },
+      { word: "Odd", def: "Strange or unusual." },
+      { word: "Offset", def: "To balance or reduce the effect of something." },
+      { word: "Ongoing", def: "Continuing to happen." },
+      { word: "Orient", def: "To become familiar with a new place, direction, or situation" },
+      { word: "Outcome", def: "The final result of something" },
+      { word: "Output", def: "The amount of something produced or made" },
+      { word: "Overlap", def: "To partly cover the same area or happen at the same time." },
+      { word: "Overseas", def: "In another country, especially across the sea" }
+    ]
+  ];
+
+  let currentRound = 1;
+  let matchedPairs = 0;
+  let flippedCards = [];
+
+  const board = document.getElementById('game-board');
+  const status = document.getElementById('status');
+  const roundTitle = document.getElementById('round-title');
+  const nextRoundBtn = document.getElementById('next-round-btn');
+
+  const shuffle = (array) => array.sort(() => Math.random() - 0.5);
+
+  function loadRound(roundNumber) {
+    board.innerHTML = "";
+    matchedPairs = 0;
+    flippedCards = [];
+    nextRoundBtn.style.display = "none";
+
+    const roundWords = allRounds[roundNumber - 1];
+    status.textContent = `Matches: 0 / ${roundWords.length}`;
+    roundTitle.textContent = `Round ${roundNumber}`;
+
+    const cards = [];
+    roundWords.forEach((pair, index) => {
+      cards.push({ id: index, type: 'word', content: pair.word });
+      cards.push({ id: index, type: 'def', content: pair.def });
+    });
+
+    shuffle(cards);
+
+    cards.forEach((card, index) => createCard(card, index));
+  }
+
+  function createCard(card, index) {
+    const div = document.createElement('div');
+    div.classList.add('card');
+    div.dataset.id = card.id;
+    div.dataset.type = card.type;
+    div.dataset.index = index;
+    div.textContent = "";
+
+    div.addEventListener('click', () => {
+      if (
+        div.classList.contains('flipped') ||
+        div.classList.contains('matched') ||
+        flippedCards.length === 2
+      ) return;
+
+      div.classList.add('flipped');
+      div.textContent = card.content;
+      flippedCards.push({ element: div, card });
+
+      if (flippedCards.length === 2) {
+        checkForMatch();
+      }
+    });
+
+    board.appendChild(div);
+  }
+
+  function checkForMatch() {
+    const [first, second] = flippedCards;
+
+    if (
+      first.card.id === second.card.id &&
+      first.card.type !== second.card.type
+    ) {
+      first.element.classList.add('matched');
+      second.element.classList.add('matched');
+      matchedPairs++;
+      const totalPairs = allRounds[currentRound - 1].length;
+      status.textContent = `Matches: ${matchedPairs} / ${totalPairs}`;
+
+      if (matchedPairs === totalPairs) {
+        if (currentRound < allRounds.length) {
+          nextRoundBtn.style.display = "inline-block";
+        } else {
+          status.textContent = "🎉 You've completed all rounds! Excellent work!";
+        }
+      }
+
+      flippedCards = [];
+    } else {
+      setTimeout(() => {
+        first.element.classList.remove('flipped');
+        second.element.classList.remove('flipped');
+        first.element.textContent = "";
+        second.element.textContent = "";
+        flippedCards = [];
+      }, 1000);
+    }
+  }
+
+  nextRoundBtn.addEventListener('click', () => {
+    currentRound++;
+    loadRound(currentRound);
+  });
+
+  // Start game
+  loadRound(currentRound);
+</script>
+
+</body>
+</html>
